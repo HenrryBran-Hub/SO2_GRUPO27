@@ -42,22 +42,14 @@ void wait_random_time() {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        fprintf(stderr, "Uso: %s <pid_del_padre> <pipe_fd>\n", argv[0]);
-        exit(1);
-    }
 
     signal(SIGINT, handle_sigint);
 
-    int pipe_fd = atoi(argv[2]);
-
+    printf("------------------------------\n");
     printf("Soy el proceso hijo\n");
     printf("Mi PID es: %d\n", getpid());
     printf("PID del proceso padre: %s\n", argv[1]);
-
-    int counter = 0;
-    int read_counter = 0;
-    int write_counter = 0;
+    printf("------------------------------\n\n");
 
     // Inicializar la semilla para los números aleatorios
     srand(time(NULL) ^ (getpid() << 16));
@@ -72,28 +64,23 @@ int main(int argc, char *argv[]) {
 
         int random_number = rand() % 10 + 1;
         if (random_number % 2 == 0) {
+            printf("------------------------------\n");
+            printf("Estoy escribiendo...\n");
             write_random_text(fd);
-            write_counter++;
+            printf("------------------------------\n\n");
         } else {
+            printf("------------------------------\n");
+            printf("Estoy Leyendo...\n");
             read_random_text(fd);
-            read_counter++;
+            printf("------------------------------\n\n");
         }
 
         close(fd);
-        
-        wait_random_time(); // Esperar un tiempo aleatorio después de la operación de lectura o escritura
 
-        counter++;
+        wait_random_time(); // Esperar un tiempo aleatorio después de la operación de lectura o escritura
     }
 
-    write(pipe_fd, &counter, sizeof(int));
-    write(pipe_fd, &read_counter, sizeof(int));
-    write(pipe_fd, &write_counter, sizeof(int));
-    close(pipe_fd);
-
-    printf("Proceso hijo terminado con contador: %d\n", counter);
-    printf("Total lecturas: %d\n", read_counter);
-    printf("Total escrituras: %d\n", write_counter);
+    printf("\nProceso hijo terminado PID: %d\n", getpid());
 
     return 0;
 }
