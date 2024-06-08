@@ -16,7 +16,15 @@ ___
 ### Comandos utilizados en C:
 ```javascript
 // Comandos para C
+// Para compilar los archivos de C
+gcc child.c -o child.bin
+gcc parent.c -o parent
+
+// Para Ejecutar el programa 
+./parent
 ```
+
+
 
 ___
 ### Integrantes
