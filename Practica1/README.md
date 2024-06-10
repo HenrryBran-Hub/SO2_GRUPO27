@@ -122,16 +122,14 @@ El archivo trace.stp se utiliza para capturar los procesos del kernel especifica
 
 El archivo parent.c se encarga de ejecutar el script trace.stp y almacenar la información recopilada en un archivo llamado syscalls.log.
 
-![19](https://i.ibb.co/ZVjRqsb/trace.jpg)
+![19](./Img/19.jpeg)
 
 21. #### syscalls.log
 El archivo syscalls.log almacena la información de las llamadas a sistemas detectadas. Cada entrada en este archivo incluye el número del proceso hijo, el tipo de llamada realizada (write, read o open), y la hora exacta en que se ejecutó la llamada.
 
-![20](https://i.ibb.co/CbCzpTG/comando.jpg)
+![20](./Img/20.jpeg)
 
-![21](https://i.ibb.co/BzJZkHP/syscalls.jpg)
-
-![22](https://i.ibb.co/DGt28jR/Resultado.jpg)
+![21](./Img/21.jpeg)
 
 
 ___
