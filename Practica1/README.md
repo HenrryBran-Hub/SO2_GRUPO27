@@ -18,6 +18,7 @@ ___
 // Comandos para C
 // Para compilar los archivos de C
 gcc child.c -o child.bin
+gcc child2.c -o child2.bin
 gcc parent.c -o parent
 
 // Para Ejecutar el programa 
