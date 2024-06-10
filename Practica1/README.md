@@ -114,7 +114,22 @@ sudo stap trace.stp <<PID1>>  >> /tmp/practica/syscalls.log
 
 ![18](./Img/18.png)
 
+19. #### SystemTap
+SystemTap es una herramienta avanzada diseñada para la instrumentación y el análisis de sistemas Linux. Permite a los desarrolladores y administradores de sistemas inspeccionar y monitorear la actividad del kernel en tiempo real. Con SystemTap, es posible escribir scripts que recopilan datos detallados sobre el funcionamiento del sistema, facilitando la depuración, el monitoreo del rendimiento y la resolución de problemas.
 
+20. #### trace.stp
+El archivo trace.stp se utiliza para capturar los procesos del kernel especificados por el archivo parent.c. En este script, se configura la detección de procesos y se monitorean las llamadas al sistema write, read y open. Además, se registra la fecha y hora exactas en que se realizan estas llamadas.
+
+El archivo parent.c se encarga de ejecutar el script trace.stp y almacenar la información recopilada en un archivo llamado syscalls.log.
+
+![19](./Img/19.jpeg)
+
+21. #### syscalls.log
+El archivo syscalls.log almacena la información de las llamadas a sistemas detectadas. Cada entrada en este archivo incluye el número del proceso hijo, el tipo de llamada realizada (write, read o open), y la hora exacta en que se ejecutó la llamada.
+
+![20](./Img/20.jpeg)
+
+![21](./Img/21.jpeg)
 
 
 ___
