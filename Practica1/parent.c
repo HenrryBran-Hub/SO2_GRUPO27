@@ -22,7 +22,7 @@ void finish_proces() {
     char line[MAX_BUF_SIZE];
     int write_count = 0, read_count = 0, open_count = 0;
 
-    file = fopen("syscalls.log", "r");
+    file = fopen("/tmp/practica/syscalls.log", "r");
     if (file == NULL) {
         perror("Error al abrir el archivo");
         exit(EXIT_FAILURE);
@@ -55,7 +55,8 @@ int main() {
 
     // Ruta del archivo en la carpeta /tmp/practica
     const char* dirpath = "/tmp/practica";
-    const char* filepath = "/tmp/practica/practica1.txt";
+    const char* filepath_txt = "/tmp/practica/practica1.txt";
+    const char* filepath_log = "/tmp/practica/syscalls.log";
 
     // Verificar si la carpeta existe, si no crearla
     struct stat st = {0};
@@ -70,13 +71,13 @@ int main() {
     }
 
     // Verificar si el archivo existe
-    int fd = open(filepath, O_RDONLY);
+    int fd = open(filepath_txt, O_RDONLY);
     if (fd != -1) {
         printf("El archivo ya existe. Limpiando datos...\n");
         close(fd);
 
         // Vaciar el archivo
-        fd = open(filepath, O_WRONLY | O_TRUNC);
+        fd = open(filepath_txt, O_WRONLY | O_TRUNC);
         if (fd == -1) {
             perror("Error vaciando el archivo.\n");
             exit(1);
@@ -86,7 +87,7 @@ int main() {
         }
     } else {
         // Crear el archivo
-        fd = open(filepath, O_CREAT | O_WRONLY, 0666);
+        fd = open(filepath_txt, O_CREAT | O_WRONLY, 0666);
         if (fd == -1) {
             perror("Error creando el archivo /tmp/practica/practica1.txt\n");
             exit(1);
@@ -96,11 +97,37 @@ int main() {
         }
     }
 
+    // Verificar si el archivo existe
+    int fd2 = open(filepath_log, O_RDONLY);
+    if (fd2 != -1) {
+        printf("El archivo ya existe. Limpiando datos...\n");
+        close(fd2);
+
+        // Vaciar el archivo
+        fd2 = open(filepath_log, O_WRONLY | O_TRUNC);
+        if (fd2 == -1) {
+            perror("Error vaciando el archivo.\n");
+            exit(1);
+        } else {
+            printf("Archivo limpio.\n");
+            close(fd2);
+        }
+    } else {
+        // Crear el archivo
+        fd2 = open(filepath_log, O_CREAT | O_WRONLY, 0666);
+        if (fd2 == -1) {
+            perror("Error creando el archivo /tmp/practica/syscalls.log\n");
+            exit(1);
+        } else {
+            printf("Archivo creado exitosamente.\n");
+            close(fd2);
+        }
+    }
+
     printf("CONFIGURACION INICIAL TERMINADA.\n\n");
 
-    for (int i = 0; i < 2; ++i) {
         pid_t pid1, pid2;
-        pid1= fork();
+        pid1 = fork();
 
         if (pid1 == -1) {
             perror("fork");
@@ -112,19 +139,17 @@ int main() {
             printf("------------------------------------\n");
             printf("Iniciando el proceso Hijo 1, Mi PID es: %d\n", getpid());
             printf("------------------------------------\n\n");
-            char* arg_Ptr1[4];
+            char* arg_Ptr1[3];
             arg_Ptr1[0] = "child.bin";
             char pid_str1[10];
             sprintf(pid_str1, "%d", getppid()); // Convertir el PID del padre a string
-            char pipe_fd_str1[10];
-            sprintf(pipe_fd_str1, "%d", i); // Convertir el descriptor de pipe a string
             arg_Ptr1[1] = pid_str1;
-            arg_Ptr1[2] = pipe_fd_str1;
-            arg_Ptr1[3] = NULL;
-
-            execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr1);
+            arg_Ptr1[2] = NULL;
+            //execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr1);
+            execv("/home/henrry201314439/Documents/SOPES2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr1);
 
         } else {
+            printf("El PID del proceso Hijo 1 es: %d\n", pid1);
             pid2 = fork();
             if (pid2 == -1) {
                 perror("fork");
@@ -136,40 +161,32 @@ int main() {
                 printf("------------------------------------\n");
                 printf("Iniciando el proceso Hijo 2, Mi PID es: %d\n", getpid());
                 printf("------------------------------------\n\n");
-                char* arg_Ptr2[4];
-                arg_Ptr2[0] = "child2.bin";
+                char* arg_Ptr2[3];
+                arg_Ptr2[0] = "child.bin";
                 char pid_str2[10];
                 sprintf(pid_str2, "%d", getppid()); // Convertir el PID del padre a string
-                char pipe_fd_str2[10];
-                sprintf(pipe_fd_str2, "%d", i); // Convertir el descriptor de pipe a string
                 arg_Ptr2[1] = pid_str2;
-                arg_Ptr2[2] = pipe_fd_str2;
-                arg_Ptr2[3] = NULL;
-
-                execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child2.bin", arg_Ptr2);
+                arg_Ptr2[2] = NULL;
+                //Nota en este el child.bin no hay como necesidad de crear otro archivo child.bin ya que son como independientes cuando se llama
+                //osea no tenes necesidad de crear child2.bin ya que son como copias las que se hacen cuando se llama por eso te lo puse como child.bin
+                //execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr2);
+                execv("/home/henrry201314439/Documents/SOPES2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr2);
 
             } else {
                 // Proceso padre
+                printf("El PID del proceso Hijo 2 es: %d\n", pid2);
                 printf("-------------------------------\n");
                 printf("Soy el proceso padre, Mi PID es: %d\n", getpid());
                 printf("-------------------------------\n\n");
 
-                // Llamar al script de SystemTap y pasar los PID como argumentos
-                char command[100];
-                sprintf(command, "%s %d %d %s", "sudo stap trace.stp ", pid1, pid2, " > syscalls.log");
+                // Llamar al script de SystemTap y pasar los PID como argumentos                
+                //char command[100];
+                //sprintf(command, "%s %d %d %s", "sudo stap trace.stp ", pid1, pid2, " >> syscalls.log");
+                char command[150];
+                sprintf(command, "%s %d %d %s", "sudo stap //home//henrry201314439//Documents//SOPES2//SO2_GRUPO27//Practica1//trace.stp ", pid1, pid2, " >> //tmp/practica//syscalls.log");
                 system(command);
             }
         }
-
-    }
-
-    // Esperar a que los hijos terminen
-    while (!terminate) {
-        sleep(1);
-    }
-
-    // Enviar señal de terminación a los hijos
-    kill(0, SIGINT);
 
     // Esperar a que todos los hijos terminen
     for (int i = 0; i < 2; ++i) {

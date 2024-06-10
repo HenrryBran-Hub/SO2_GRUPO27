@@ -38,7 +38,12 @@ void read_random_text(int fd) {
 
 void wait_random_time() {
     int random_time = rand() % 3 + 1;
-    sleep(random_time);
+    for (int i = 0; i < random_time; ++i) {
+        sleep(1);
+        if (terminate) {
+            break;
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -65,11 +70,13 @@ int main(int argc, char *argv[]) {
         int random_number = rand() % 10 + 1;
         if (random_number % 2 == 0) {
             printf("------------------------------\n");
+            printf("Mi PID es: %d\n", getpid());
             printf("Estoy escribiendo...\n");
             write_random_text(fd);
             printf("------------------------------\n\n");
         } else {
             printf("------------------------------\n");
+            printf("Mi PID es: %d\n", getpid());
             printf("Estoy Leyendo...\n");
             read_random_text(fd);
             printf("------------------------------\n\n");
