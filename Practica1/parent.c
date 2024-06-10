@@ -40,9 +40,9 @@ void finish_proces() {
 
     fclose(file);
 
-    printf("Write count: %d\n", write_count);
-    printf("Read count: %d\n", read_count);
-    printf("Open count: %d\n", open_count);
+    printf("Conteo de write: %d\n", write_count);
+    printf("Conteo de read: %d\n", read_count);
+    printf("Conteo de open: %d\n", open_count);
     printf("Total de procesos: %d\n", write_count + read_count + open_count);
     printf("\n===========================================\n");
 }
