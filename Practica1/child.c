@@ -10,6 +10,7 @@
 volatile sig_atomic_t terminate = 0;
 
 void handle_sigint(int sig) {
+    printf("Proceso hijo %d recibió la señal SIGINT\n", getpid());
     terminate = 1;
 }
 
@@ -88,6 +89,6 @@ int main(int argc, char *argv[]) {
     }
 
     printf("\nProceso hijo terminado PID: %d\n", getpid());
-
+    
     return 0;
 }

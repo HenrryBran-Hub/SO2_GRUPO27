@@ -13,6 +13,7 @@ volatile sig_atomic_t terminate = 0;
 #define MAX_BUF_SIZE 100
 
 void handle_sigint(int sig) {
+    printf("Proceso hijo %d recibió la señal SIGINT\n", getpid());
     terminate = 1;
 }
 
@@ -126,67 +127,77 @@ int main() {
 
     printf("CONFIGURACION INICIAL TERMINADA.\n\n");
 
-        pid_t pid1, pid2;
-        pid1 = fork();
+    pid_t pid1, pid2;
+    pid1 = fork();
 
-        if (pid1 == -1) {
+    if (pid1 == -1) {
+        perror("fork");
+        exit(1);
+    }
+
+    if (pid1 == 0) {
+        // Proceso hijo
+        printf("------------------------------------\n");
+        printf("Iniciando el proceso Hijo 1, Mi PID es: %d\n", getpid());
+        printf("------------------------------------\n\n");
+        char* arg_Ptr1[3];
+        arg_Ptr1[0] = "child.bin";
+        char pid_str1[10];
+        sprintf(pid_str1, "%d", getppid()); // Convertir el PID del padre a string
+        arg_Ptr1[1] = pid_str1;
+        arg_Ptr1[2] = NULL;
+        //execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr1);
+        execv("/home/henrry201314439/Documents/SOPES2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr1);
+
+    } else {
+        printf("El PID del proceso Hijo 1 es: %d\n", pid1);
+        pid2 = fork();
+        if (pid2 == -1) {
             perror("fork");
             exit(1);
         }
-
-        if (pid1 == 0) {
-            // Proceso hijo
+                
+        if (pid2 == 0) {
+            // Proceso hijo 2
             printf("------------------------------------\n");
-            printf("Iniciando el proceso Hijo 1, Mi PID es: %d\n", getpid());
+            printf("Iniciando el proceso Hijo 2, Mi PID es: %d\n", getpid());
             printf("------------------------------------\n\n");
-            char* arg_Ptr1[3];
-            arg_Ptr1[0] = "child.bin";
-            char pid_str1[10];
-            sprintf(pid_str1, "%d", getppid()); // Convertir el PID del padre a string
-            arg_Ptr1[1] = pid_str1;
-            arg_Ptr1[2] = NULL;
-            //execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr1);
-            execv("/home/henrry201314439/Documents/SOPES2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr1);
+            char* arg_Ptr2[3];
+            arg_Ptr2[0] = "child.bin";
+            char pid_str2[10];
+            sprintf(pid_str2, "%d", getppid()); // Convertir el PID del padre a string
+            arg_Ptr2[1] = pid_str2;
+            arg_Ptr2[2] = NULL;
+            //Nota en este el child.bin no hay como necesidad de crear otro archivo child.bin ya que son como independientes cuando se llama
+            //osea no tenes necesidad de crear child2.bin ya que son como copias las que se hacen cuando se llama por eso te lo puse como child.bin
+            //execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr2);
+            execv("/home/henrry201314439/Documents/SOPES2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr2);
 
         } else {
-            printf("El PID del proceso Hijo 1 es: %d\n", pid1);
-            pid2 = fork();
-            if (pid2 == -1) {
-                perror("fork");
-                exit(1);
-            }
-                    
-            if (pid2 == 0) {
-                // Proceso hijo 2
-                printf("------------------------------------\n");
-                printf("Iniciando el proceso Hijo 2, Mi PID es: %d\n", getpid());
-                printf("------------------------------------\n\n");
-                char* arg_Ptr2[3];
-                arg_Ptr2[0] = "child.bin";
-                char pid_str2[10];
-                sprintf(pid_str2, "%d", getppid()); // Convertir el PID del padre a string
-                arg_Ptr2[1] = pid_str2;
-                arg_Ptr2[2] = NULL;
-                //Nota en este el child.bin no hay como necesidad de crear otro archivo child.bin ya que son como independientes cuando se llama
-                //osea no tenes necesidad de crear child2.bin ya que son como copias las que se hacen cuando se llama por eso te lo puse como child.bin
-                //execv("/home/henry/Sopes2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr2);
-                execv("/home/henrry201314439/Documents/SOPES2/SO2_GRUPO27/Practica1/child.bin", arg_Ptr2);
+            // Proceso padre
+            printf("El PID del proceso Hijo 2 es: %d\n", pid2);
+            printf("-------------------------------\n");
+            printf("Soy el proceso padre, Mi PID es: %d\n", getpid());
+            printf("-------------------------------\n\n");
 
-            } else {
-                // Proceso padre
-                printf("El PID del proceso Hijo 2 es: %d\n", pid2);
-                printf("-------------------------------\n");
-                printf("Soy el proceso padre, Mi PID es: %d\n", getpid());
-                printf("-------------------------------\n\n");
-
-                // Llamar al script de SystemTap y pasar los PID como argumentos                
-                //char command[100];
-                //sprintf(command, "%s %d %d %s", "sudo stap trace.stp ", pid1, pid2, " >> syscalls.log");
-                char command[150];
-                sprintf(command, "%s %d %d %s", "sudo stap //home//henrry201314439//Documents//SOPES2//SO2_GRUPO27//Practica1//trace.stp ", pid1, pid2, " >> //tmp/practica//syscalls.log");
-                system(command);
-            }
+            // Llamar al script de SystemTap y pasar los PID como argumentos                
+            //char command[100];
+            //sprintf(command, "%s %d %d %s", "sudo stap trace.stp ", pid1, pid2, " >> syscalls.log");
+            char command[150];
+            sprintf(command, "%s %d %d %s", "sudo stap //home//henrry201314439//Documents//SOPES2//SO2_GRUPO27//Practica1//trace.stp ", pid1, pid2, " >> //tmp/practica//syscalls.log");
+            system(command);
         }
+    }
+
+    pause();
+
+    // Esperar a que los hijos terminen
+    while (!terminate) {
+        sleep(1);
+    }
+
+    // Enviar señal de terminación a los hijos
+    kill(0, SIGINT);
 
     // Esperar a que todos los hijos terminen
     for (int i = 0; i < 2; ++i) {
