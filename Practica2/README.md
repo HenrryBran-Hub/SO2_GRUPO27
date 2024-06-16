@@ -10,7 +10,7 @@ ___
 ```javascript
 // Comandos para C
 // Para compilar los archivos de C
-gcc main.c cJSON.c -o main
+gcc main.c cJSON.c -o main -lm
 
 // Para Ejecutar el programa 
 ./main
