@@ -1,8 +1,9 @@
+Error:Registro #68: saldo, el saldo(-8.000000) es un numero negativo.
+Error:Registro #40: saldo, el saldo(-4.150000) es un numero negativo.
 Error:Registro #6: saldo, el saldo(quinientos mil) no es un numero.
 Error:Registro #18: saldo, el saldo(-3200.600000) es un numero negativo.
 Error:Registro #24: saldo, el saldo(1o00) no es un numero.
+Error:Registro #30: registros duplicados, el no_cuenta(9439) ya esta siendo utilizada.
+Error:Registro #54: registros duplicados, el no_cuenta(5877) ya esta siendo utilizada.
 Error:Registro #90: saldo, el saldo(a) no es un numero.
-Error:Registro #4: registros duplicados, el no_cuenta(3959) ya esta siendo utilizada.
-Error:Registro #16: registros duplicados, el no_cuenta(9439) ya esta siendo utilizada.
-Error:Registro #40: saldo, el saldo(-4.150000) es un numero negativo.
-Error:Registro #55: registros duplicados, el no_cuenta(5877) ya esta siendo utilizada.
+Error:Registro #99: registros duplicados, el no_cuenta(3959) ya esta siendo utilizada.
