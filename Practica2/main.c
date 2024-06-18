@@ -11,8 +11,10 @@
 #include <unistd.h>
 #include <time.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define user_size_const 200
+#define MAX_OPERATIONS 1000 // Máximo número de operaciones en el JSON
 
 
 // Prototipos de funciones
@@ -21,6 +23,7 @@ void upload_user();
 void backup_user();
 void create_user();
 void informe_menu();
+void cargar_operaciones();
 //void stats();
 void read_and_print_file_by_line(const char *path);
 void read_json_file(char* filename, int thread_id, int* record_count);
@@ -54,6 +57,100 @@ typedef struct {
     int thread_id;
     int* record_count;
 } thread_arg_t;
+
+// Estructura para una operación
+struct Operation {
+    int type; // Tipo de operación
+    int account1; // Cuenta 1
+    int account2; // Cuenta 2
+    float amount; // Monto
+} operations[MAX_OPERATIONS]; // Arreglo para almacenar las operaciones
+
+// Estructura para un error
+struct Error {
+    int line_number;  // Número de línea en el archivo JSON donde ocurrió el error
+    int error_code;   // Código del error
+} error_list[MAX_OPERATIONS];  // Arreglo para almacenar los errores
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Inicialización del mutex
+int operation_count = 0; // Contador de operaciones
+int num_deposits = 0; // Contador de depósitos
+int num_withdrawals = 0; // Contador de retiros
+int num_transfers = 0; // Contador de transferencias
+int num_errors = 0; // Contador de errores
+int num_operations_per_thread[4] = {0}; // Almacena el número de operaciones por hilo
+
+// Códigos de error
+#define ERROR_ACCOUNT_NOT_EXIST    1
+#define ERROR_INVALID_AMOUNT       2
+#define ERROR_INVALID_OPERATION_ID 3
+#define ERROR_INSUFFICIENT_BALANCE 4
+
+void depositoMasivo(int cuenta1, float monto);
+void retiroMasivo(int cuenta1, float monto);
+void transferenciaMasiva(int cuenta1, int cuenta2, float monto);
+
+// Función para verificar si una cuenta existe
+bool account_exists(int account) {
+    // Lógica para verificar si una cuenta existe (dummy para este ejemplo)
+    // En la práctica, necesitarías una lista o base de datos de cuentas válidas.
+    return account >= 0;
+}
+
+// Función para verificar si el monto es válido
+bool is_valid_amount(float amount) {
+    return amount >= 0;
+}
+
+// Función para verificar si una cuenta tiene saldo suficiente
+bool has_sufficient_balance(int account, float amount) {
+    // Lógica para verificar si la cuenta tiene saldo suficiente (dummy para este ejemplo)
+    // En la práctica, necesitarías acceder al saldo real de la cuenta.
+    return true;
+}
+
+// Función para procesar una operación
+void process_operation(struct Operation op) {
+    // Realizar lógica para procesar la operación
+    // En este ejemplo, solo incrementamos los contadores correspondientes
+    switch (op.type) {
+        case 1:
+            num_deposits++;
+            depositoMasivo(op.account1, op.amount);
+            break;
+        case 2:
+            num_withdrawals++;
+            retiroMasivo(op.account1, op.amount);
+            break;
+        case 3:
+            num_transfers++;
+            transferenciaMasiva(op.account1, op.account2, op.amount);
+            break;
+    }
+}
+
+// Función que ejecutarán los hilos
+void *thread_function(void *arg) {
+    int thread_id = *(int *)arg;
+    int start_index = (operation_count / 4) * thread_id; // Índice de inicio para este hilo
+    int end_index = (operation_count / 4) * (thread_id + 1); // Índice de fin para este hilo
+    if (thread_id == 3) {
+        end_index = operation_count; // El último hilo toma cualquier operación restante
+    }
+    for (int i = start_index; i < end_index; i++) {
+        pthread_mutex_lock(&mutex); // Bloquear el mutex antes de acceder a las operaciones
+        struct Operation op = operations[i]; // Obtener la operación a procesar
+        pthread_mutex_unlock(&mutex); // Desbloquear el mutex después de acceder a las operaciones
+
+        process_operation(op); // Procesar la operación
+
+        pthread_mutex_lock(&mutex); // Bloquear el mutex antes de actualizar el contador de operaciones por hilo
+        num_operations_per_thread[thread_id]++; // Incrementar el contador de operaciones para este hilo
+        pthread_mutex_unlock(&mutex); // Desbloquear el mutex después de actualizar el contador
+    }
+    printf("Hilo %d terminado.\n", thread_id);
+    return NULL;
+}
 
 int main() {
     printf("----------------------------------------\n");
@@ -141,7 +238,7 @@ void menu_main() {
                 backup_user();
                 break;
             case 3:
-                //new_user();
+                cargar_operaciones();
                 break;
             case 4:
                 //new_trans();
@@ -773,6 +870,290 @@ void consultar_cuenta() {
             printf("Nombre: %s\n", users_list[i].nombre);
             printf("Saldo: %.2f\n", users_list[i].saldo);
             return;
+        }
+    }
+}
+// ---- Agregando operaciones masivas ----
+
+// Función para leer el archivo JSON
+char* read_file(const char* filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error al abrir el archivo JSON");
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *data = (char*)malloc(length + 1);
+    if (data == NULL) {
+        perror("Error de asignación de memoria");
+        fclose(file);
+        return NULL;
+    }
+
+    fread(data, 1, length, file);
+    data[length] = '\0'; // Añadir el carácter nulo al final de la cadena
+
+    fclose(file);
+    return data;
+}
+
+// Función para escribir el informe de carga masiva en el archivo de registro
+void write_report(char *filename) {
+    pthread_mutex_lock(&mutex); // Bloquear el mutex antes de abrir el archivo
+
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Error al abrir el archivo de registro");
+        exit(EXIT_FAILURE);
+    }
+
+    // Obtener la fecha y hora actual
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    char timestamp[20];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+
+    // Escribir encabezado del informe
+    fprintf(file, "---------- Resumen de operaciones ---------- \n");
+    fprintf(file, "Fecha: %s\n", timestamp);
+    fprintf(file, "Operaciones realizadas:\n");
+    fprintf(file, "Retiros: %d\n", num_withdrawals);
+    fprintf(file, "Depositos: %d\n", num_deposits);
+    fprintf(file, "Transferencias: %d\n", num_transfers);
+    fprintf(file, "Total: %d\n", operation_count);
+    fprintf(file, "\nOperaciones por hilo:\n");
+    int total_operations = 0;
+    for (int i = 0; i < 4; i++) {
+        fprintf(file, "- Hilo #%d: %d\n", i + 1, num_operations_per_thread[i]);
+        total_operations += num_operations_per_thread[i];
+    }
+    fprintf(file, "Total: %d\n", total_operations);
+    fprintf(file, "\nLista de errores:\n");
+
+    // Escribir lista de errores
+    for (int i = 0; i < num_errors; i++) {
+        fprintf(file, "- Línea #%d: ", error_list[i].line_number);
+        switch (error_list[i].error_code) {
+            case ERROR_ACCOUNT_NOT_EXIST:
+                fprintf(file, "Números de cuenta no existen\n");
+                break;
+            case ERROR_INVALID_AMOUNT:
+                fprintf(file, "El monto no es válido o es menor a 0\n");
+                break;
+            case ERROR_INVALID_OPERATION_ID:
+                fprintf(file, "El identificador de la operación no existe\n");
+                break;
+            case ERROR_INSUFFICIENT_BALANCE:
+                fprintf(file, "La cuenta no tiene saldo suficiente para ejecutar la operación\n");
+                break;
+            default:
+                fprintf(file, "Error desconocido\n");
+                break;
+        }
+    }
+
+    fclose(file);
+
+    pthread_mutex_unlock(&mutex); // Desbloquear el mutex después de cerrar el archivo
+}
+
+void cargar_operaciones() {
+    char filename[100];
+    printf("Ingrese la ruta del archivo JSON: ");
+    scanf("%s", filename);
+    
+    char *json_data = read_file(filename);
+    if (json_data == NULL) {
+        return;
+    }
+    
+    cJSON *json = cJSON_Parse(json_data);
+    if (json == NULL) {
+        printf("Error al analizar JSON\n");
+        free(json_data);
+        return;
+    }
+
+    cJSON *operation;
+    int line_number = 1;
+    cJSON_ArrayForEach(operation, json) {
+        printf("Procesando línea %d: %s\n", line_number, cJSON_Print(operation));
+
+        cJSON *type = cJSON_GetObjectItem(operation, "operacion");
+        cJSON *account1 = cJSON_GetObjectItem(operation, "cuenta1");
+        cJSON *account2 = cJSON_GetObjectItem(operation, "cuenta2");
+        cJSON *amount = cJSON_GetObjectItem(operation, "monto");
+
+        bool valid_operation = true;
+        int error_code = 0;
+
+        // Verificar errores
+        if (!cJSON_IsNumber(type) || !cJSON_IsNumber(account1) || !cJSON_IsNumber(account2) || !cJSON_IsNumber(amount)) {
+            valid_operation = false;
+            error_code = ERROR_INVALID_AMOUNT;
+        } else if (amount->valuedouble < 0) {
+            valid_operation = false;
+            error_code = ERROR_INVALID_AMOUNT;
+        } else if (type->valueint < 1 || type->valueint > 3) {
+            valid_operation = false;
+            error_code = ERROR_INVALID_OPERATION_ID;
+        } else if (type->valueint == 1) {
+            if (!no_cuenta_exists(account1->valueint)) {
+                valid_operation = false;
+                error_code = ERROR_ACCOUNT_NOT_EXIST;
+            }
+        } else if (type->valueint == 2) {
+            if (!no_cuenta_exists(account1->valueint)) {
+                valid_operation = false;
+                error_code = ERROR_ACCOUNT_NOT_EXIST;
+            }
+            
+            for (int i = 0; i < user_size_const; i++) {
+                if (users_list[i].no_cuenta == account1->valueint) {
+                    if (users_list[i].saldo < amount->valuedouble) {
+                        valid_operation = false;
+                        error_code = ERROR_INSUFFICIENT_BALANCE;
+                    }
+                }
+            }
+        } else if (type->valueint == 3) {
+            if (!no_cuenta_exists(account1->valueint)) {
+                valid_operation = false;
+                error_code = ERROR_ACCOUNT_NOT_EXIST;
+            }
+            if (!no_cuenta_exists(account2->valueint)) {
+                valid_operation = false;
+                error_code = ERROR_ACCOUNT_NOT_EXIST;
+            }
+
+            for (int i = 0; i < user_size_const; i++) {
+                if (users_list[i].no_cuenta == account1->valueint) {
+                    if (users_list[i].saldo < amount->valuedouble) {
+                        valid_operation = false;
+                        error_code = ERROR_INSUFFICIENT_BALANCE;
+                    }
+                }
+            }
+        }
+
+        // Registrar el error si la operación no es válida
+        if (!valid_operation) {
+            pthread_mutex_lock(&mutex);
+            error_list[num_errors].line_number = line_number;
+            error_list[num_errors].error_code = error_code;
+            num_errors++;
+            pthread_mutex_unlock(&mutex);
+        } else {
+            // Si no hay errores, almacenar la operación
+            pthread_mutex_lock(&mutex);
+            operations[operation_count].type = type->valueint;
+            operations[operation_count].account1 = account1->valueint;
+            operations[operation_count].account2 = account2->valueint;
+            operations[operation_count].amount = (float)amount->valuedouble;
+            operation_count++;
+            pthread_mutex_unlock(&mutex);
+        }
+        line_number++;
+    }
+
+    cJSON_Delete(json);
+    free(json_data);
+
+    // Creación de los hilos
+    pthread_t threads[4];
+    int thread_ids[4];
+    for (int i = 0; i < 4; i++) {
+        thread_ids[i] = i;
+        pthread_create(&threads[i], NULL, thread_function, &thread_ids[i]);
+    }
+
+    // Esperar a que los hilos terminen
+    for (int i = 0; i < 4; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // Generar el nombre del archivo de registro
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    char report_filename[100];
+    strftime(report_filename, sizeof(report_filename), "operaciones_%Y-%m-%d-%H_%M_%S.log", tm_info);
+
+    // Escribir el informe de carga masiva en el archivo de registro
+    write_report(report_filename);
+
+    pthread_mutex_destroy(&mutex); // Destruir el mutex al finalizar
+
+    return;
+}
+
+void depositoMasivo(int cuenta1, float monto) {
+    monto = two_dots(monto);
+    for (int i = 0; i < user_size_const; i++) {
+        if (users_list[i].no_cuenta == cuenta1) {
+            users_list[i].saldo += monto;
+            printf("Se encontro la cuenta\n");
+            return;
+        }
+    }
+    printf("No se encontro la cuenta\n");
+}
+
+void retiroMasivo(int cuenta1, float monto) {
+    if (!no_cuenta_exists(cuenta1)) {
+        printf("Error: La cuenta no existe.\n");
+        return;
+    }
+
+    monto = two_dots(monto);
+
+    for (int i = 0; i < user_size_const; i++) {
+        if (users_list[i].no_cuenta == cuenta1) {
+            if (users_list[i].saldo >= monto) {
+                users_list[i].saldo -= monto;
+                printf("Retiro exitoso. Nuevo saldo: %.2f\n", users_list[i].saldo);
+            } else {
+                printf("Error: Saldo insuficiente.\n");
+            }
+            return;
+        }
+    }
+}
+
+void transferenciaMasiva(int cuenta1, int cuenta2, float monto) {
+
+    if (!no_cuenta_exists(cuenta1)) {
+        printf("Error: La cuenta de origen no existe.\n");
+        return;
+    }
+
+    if (!no_cuenta_exists(cuenta2)) {
+        printf("Error: La cuenta de destino no existe.\n");
+        return;
+    }
+
+    monto = two_dots(monto);
+
+    for (int i = 0; i < user_size_const; i++) {
+        if (users_list[i].no_cuenta == cuenta1) {
+            if (users_list[i].saldo >= monto) {
+                users_list[i].saldo -= monto;
+                for (int j = 0; j < user_size_const; j++) {
+                    if (users_list[j].no_cuenta == cuenta2) {
+                        users_list[j].saldo += monto;
+                        printf("Transferencia exitosa.\n");
+                        printf("Nuevo saldo de la cuenta de origen: %.2f\n", users_list[i].saldo);
+                        printf("Nuevo saldo de la cuenta de destino: %.2f\n", users_list[j].saldo);
+                        return;
+                    }
+                }
+            } else {
+                printf("Error: Saldo insuficiente en la cuenta de origen.\n");
+                return;
+            }
         }
     }
 }
