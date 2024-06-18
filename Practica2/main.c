@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+
 #define user_size_const 200
 #define MAX_OPERATIONS 1000 // Máximo número de operaciones en el JSON
 
@@ -25,8 +26,10 @@ void create_user();
 void informe_menu();
 void cargar_operaciones();
 //void stats();
+void read_and_print_file_by_line_output(const char *path, FILE *output_file);
 void read_and_print_file_by_line(const char *path);
 void read_json_file(char* filename, int thread_id, int* record_count);
+void read_and_print_file_by_line_oper(const char *path);
 
 // Comprobaciones
 int is_number_real(float number);
@@ -219,11 +222,10 @@ void menu_main() {
         printf("1. Cargar datos de usuarios.\n");
         printf("2. Almacenamiento datos de usuarios.\n");
         printf("3. Cargar operaciones de usuarios.\n");
-        printf("4. Almacenamiento operaciones de usuarios.\n");
-        printf("5. Crear usuario.\n");
-        printf("6. Crear operacion.\n");
-        printf("7. Informes.\n");
-        printf("8. Salir\n");
+        printf("4. Crear usuario.\n");
+        printf("5. Crear operacion.\n");
+        printf("6. Informes.\n");
+        printf("7. Salir\n");
         printf("Ingrese una opcion: ");
         
         // Leer la opción ingresada por el usuario
@@ -241,18 +243,15 @@ void menu_main() {
                 cargar_operaciones();
                 break;
             case 4:
-                //new_trans();
-                break;
-            case 5:
                 create_user();
                 break;
-            case 6:
+            case 5:
                 operaciones_menu();
                 break;
-            case 7:
+            case 6:
                 informe_menu();
                 break;
-            case 8:
+            case 7:
                 printf("\nSaliendo...\n");
                 continuar = 0; // Cambiar la condición para salir del bucle
                 break;
@@ -303,6 +302,39 @@ void upload_user() {
     read_and_print_file_by_line(filepath_txt);
     printf("\n-----------------------------------------------------------\n");
 
+    // Obtener fecha y hora actual
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    char datetime[64];
+    strftime(datetime, sizeof(datetime) - 1, "carga_%Y_%m_%d-%H_%M_%S.log", t);
+
+    // Crear ruta completa del archivo
+    char filepath[128] = "logs/";
+    strcat(filepath, datetime);
+
+    // Abrir archivo de salida
+    FILE *output_file = fopen(filepath, "w");
+    if (output_file == NULL) {
+        perror("Error al abrir el archivo de salida");
+        return;
+    }
+
+    fprintf(output_file, "\n-------------------- Carga de usuarios --------------------\n");
+    fprintf(output_file, "Fecha y Hora: %s\n", asctime(localtime(&(time_t){time(NULL)})));
+    fprintf(output_file, "Usuarios cargados:\n");
+    fprintf(output_file, "Hilo 1: %d\n", records[0]);
+    fprintf(output_file, "Hilo 2: %d\n", records[1]);
+    fprintf(output_file, "Hilo 3: %d\n", records[2]);
+    fprintf(output_file, "Total: %d\n", total_records);
+    fprintf(output_file, "Errores:\n");
+    read_and_print_file_by_line_output(filepath_txt, output_file);
+    fprintf(output_file, "\n-----------------------------------------------------------\n");
+
+    // Cerrar archivo de salida
+    fclose(output_file);
+
+
+
 }
 
 // función de hilo para cargar datos
@@ -314,6 +346,27 @@ void *load_data_thread(void *arg) {
     read_json_file(filename, thread_id, record_count);
     free(arg);
     return NULL;
+}
+
+void read_and_print_file_by_line_output(const char *path, FILE *output_file) {
+    FILE *file = fopen(path, "r");
+    if (file == NULL) {
+        perror("Error al abrir el archivo");
+        return;
+    }
+
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int line_number = 1;
+
+    while ((read = getline(&line, &len, file)) != -1) {
+        fprintf(output_file, "\t-Linea %d: %s", line_number, line);
+        line_number++;
+    }
+
+    free(line);
+    fclose(file);
 }
 
 //lectura del archivo de errores
@@ -957,6 +1010,7 @@ void write_report(char *filename) {
     }
 
     fclose(file);
+    read_and_print_file_by_line_oper(filename);
 
     pthread_mutex_unlock(&mutex); // Desbloquear el mutex después de cerrar el archivo
 }
@@ -1080,7 +1134,7 @@ void cargar_operaciones() {
     time_t now = time(NULL);
     struct tm *tm_info = localtime(&now);
     char report_filename[100];
-    strftime(report_filename, sizeof(report_filename), "operaciones_%Y-%m-%d-%H_%M_%S.log", tm_info);
+    strftime(report_filename, sizeof(report_filename), "logs/operaciones_%Y-%m-%d-%H_%M_%S.log", tm_info);
 
     // Escribir el informe de carga masiva en el archivo de registro
     write_report(report_filename);
@@ -1156,4 +1210,23 @@ void transferenciaMasiva(int cuenta1, int cuenta2, float monto) {
             }
         }
     }
+}
+
+void read_and_print_file_by_line_oper(const char *path) {
+    FILE *file = fopen(path, "r");
+    if (file == NULL) {
+        perror("Error al abrir el archivo");
+        return;
+    }
+
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    while ((read = getline(&line, &len, file)) != -1) {
+        printf("%s",line);
+    }
+
+    free(line);
+    fclose(file);
 }

@@ -1,0 +1,20 @@
+
+-------------------- Carga de usuarios --------------------
+Fecha y Hora: Mon Jun 17 22:30:35 2024
+
+Usuarios cargados:
+Hilo 1: 28
+Hilo 2: 34
+Hilo 3: 33
+Total: 95
+Errores:
+	-Linea 1: Error:Registro #68: saldo, el saldo(-8.000000) es un numero negativo.
+	-Linea 2: Error:Registro #6: saldo, el saldo(quinientos mil) no es un numero.
+	-Linea 3: Error:Registro #18: saldo, el saldo(-3200.600000) es un numero negativo.
+	-Linea 4: Error:Registro #24: saldo, el saldo(1o00) no es un numero.
+	-Linea 5: Error:Registro #30: registros duplicados, el no_cuenta(9439) ya esta siendo utilizada.
+	-Linea 6: Error:Registro #54: registros duplicados, el no_cuenta(5877) ya esta siendo utilizada.
+	-Linea 7: Error:Registro #90: saldo, el saldo(a) no es un numero.
+	-Linea 8: Error:Registro #99: registros duplicados, el no_cuenta(3959) ya esta siendo utilizada.
+
+-----------------------------------------------------------

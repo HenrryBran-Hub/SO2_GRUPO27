@@ -1,0 +1,16 @@
+---------- Resumen de operaciones ---------- 
+Fecha: 2024-06-17 22:31:24
+Operaciones realizadas:
+Retiros: 18
+Depositos: 24
+Transferencias: 3
+Total: 30
+
+Operaciones por hilo:
+- Hilo #1: 10
+- Hilo #2: 10
+- Hilo #3: 10
+- Hilo #4: 15
+Total: 45
+
+Lista de errores:
