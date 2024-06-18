@@ -205,6 +205,14 @@ gcc main.c cJSON.c -o main -lm
 46. #### Salida del programa con opcion 8
 
 ![46](./Img/46.png)
+
+47. #### Funcion para cargar las operaciones masivas
+
+![47](./Img/47.png)
+
+48. #### Archivo operaciones.log
+
+![48](./Img/48.png)
 ___
 ### Integrantes
 | Nombre | Carnet | Usuario Git |
