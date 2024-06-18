@@ -3,6 +3,7 @@
 		"nombre":	"Karlan Canario",
 		"saldo":	35494.48828125
 	}, {
+<<<<<<< HEAD
 		"no_cuenta":	3959,
 		"nombre":	"Rosemonde Champ",
 		"saldo":	36898.1484375
@@ -378,4 +379,9 @@
 		"no_cuenta":	1001,
 		"nombre":	"Fanchon Drable",
 		"saldo":	18000.759765625
+=======
+		"no_cuenta":	6361,
+		"nombre":	"Christian Houlton",
+		"saldo":	30065.44921875
+>>>>>>> bb5cbf0d9e22465f862b0228c47966fca1b1f42c
 	}]
