@@ -200,14 +200,13 @@ int main() {
         printf("La carpeta backup ya existe.\n");
     }
 
+    
     init_user_list(users_list);
-    pthread_mutex_init(&user_list_mutex, NULL);
-
     printf("SISTEMA CARGADO CON EXITO.\n");
     printf("----------------------------------------\n\n");
     menu_main();
 
-    pthread_mutex_destroy(&user_list_mutex);
+    
     return 0;
 }
 
@@ -233,8 +232,10 @@ void menu_main() {
 
         // Evaluar la opción ingresada usando switch
         switch(opcion) {
-            case 1:
+            case 1:               
+                pthread_mutex_init(&user_list_mutex, NULL);
                 upload_user();
+                pthread_mutex_destroy(&user_list_mutex);
                 break;
             case 2:
                 backup_user();
