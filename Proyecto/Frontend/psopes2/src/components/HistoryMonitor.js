@@ -46,8 +46,19 @@ const HistoryMonitor = () => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = dataTabla.slice(indexOfFirstRow, indexOfLastRow);
 
-  // Cambiar página
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // Función para ir a la página siguiente
+  const nextPage = () => {
+    if (currentPage < Math.ceil(dataTabla.length / rowsPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Función para ir a la página anterior
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   return (
     <div>
@@ -82,26 +93,20 @@ const HistoryMonitor = () => {
         </div>
         {/* Paginación */}
         <nav>
-          <ul className="pagination">
-            {Array.from(
-              { length: Math.ceil(dataTabla.length / rowsPerPage) },
-              (_, index) => (
-                <li
-                  key={index}
-                  className={`page-item ${
-                    currentPage === index + 1 ? "active" : ""
-                  }`}
-                >
-                  <button
-                    onClick={() => paginate(index + 1)}
-                    className="page-link"
-                  >
-                    {index + 1}
-                  </button>
-                </li>
-              )
-            )}
-          </ul>
+          <div className="container-img_hm">
+            <ul className="pagination" >
+              <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                <button onClick={prevPage} className="page-link">
+                  Anterior
+                </button>
+              </li>
+              <li className={`page-item ${currentPage === Math.ceil(dataTabla.length / rowsPerPage) ? "disabled" : ""}`}>
+                <button onClick={nextPage} className="page-link">
+                  Siguiente
+                </button>
+              </li>
+            </ul>
+          </div>
         </nav>
       </div>
     </div>
