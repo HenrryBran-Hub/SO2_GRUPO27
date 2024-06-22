@@ -6,12 +6,12 @@ USE sopes2;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Proceso`(
   `id` INT NOT NULL AUTO_INCREMENT,
-  `PID` INT NOT NULL,
+  `PID` BIGINT NOT NULL,
   `Nombre` VARCHAR(100) NOT NULL,
   `LLamada` VARCHAR(10) NOT NULL,
-  `Memoria` INT NOT NULL,
+  `Memoria` BIGINT NOT NULL,
   `Fecha` DATETIME NOT NULL,
-  `Porcentaje` DECIMAL(3,2) NOT NULL,
+  `Porcentaje` DECIMAL(10,5) NOT NULL,
   PRIMARY KEY (id)
 )ENGINE = InnoDB;
 
@@ -69,8 +69,6 @@ INSERT INTO Proceso (PID, Nombre, LLamada, Memoria, Fecha, Porcentaje) VALUES
 ('765432', 'indesign', 'UNMAP', '92017364', '2024-05-03 12:25:00', '9'),
 ('456789', 'premiere', 'MAP', '51928734', '2024-05-02 14:40:00', '5');
 
-DROP PROCEDURE GetTopMemoryProcesses;
-
 DELIMITER //
 
 CREATE PROCEDURE GetTopMemoryProcesses()
@@ -79,14 +77,14 @@ BEGIN
     CREATE TEMPORARY TABLE IF NOT EXISTS TempResults (
         PID VARCHAR(50),
         Nombre VARCHAR(100),
-        Memoria DECIMAL(10, 2),
-        Porcentaje DECIMAL(5, 2)
+        Memoria DECIMAL(20, 5),
+        Porcentaje DECIMAL(20, 5)
     );
 
     -- Insertar los top 9 procesos en la tabla temporal
     INSERT INTO TempResults (PID, Nombre, Memoria, Porcentaje)
     SELECT PID, Nombre,
-           CAST(Memoria / 1024 / 1024 AS DECIMAL(10, 2)) AS Memoria,
+           CAST(Memoria / 1024 / 1024 AS DECIMAL(20, 5)) AS Memoria,
            Porcentaje
     FROM Proceso
     ORDER BY Memoria DESC
@@ -95,7 +93,7 @@ BEGIN
     -- Insertar la suma de memoria y porcentaje de los procesos restantes
     INSERT INTO TempResults (PID, Nombre, Memoria, Porcentaje)
     SELECT 'Todos' AS PID, 'Todos' AS Nombre, 
-           CAST(SUM(Memoria) / 1024 / 1024 AS DECIMAL(10, 2)) AS Memoria,
+           CAST(SUM(Memoria) / 1024 / 1024 AS DECIMAL(20, 5)) AS Memoria,
            SUM(Porcentaje) AS Porcentaje
     FROM (
         SELECT PID, Nombre, Memoria, Porcentaje,
@@ -122,7 +120,7 @@ BEGIN
         PID, 
         Llamada, 
         CONCAT(
-            FORMAT(CONVERT(Memoria / 1024 / 1024, DECIMAL(10, 2)), 2),
+            FORMAT(CONVERT(Memoria / 1024 / 1024, DECIMAL(20, 5)), 5),
             ' MB'
         ) AS Tamaño,
         Fecha

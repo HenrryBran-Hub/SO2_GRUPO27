@@ -1,0 +1,17 @@
+.navbar {
+    display: inline-block;
+  }
+  
+  .nav-button {
+    padding: 10px 20px; /* Ajustar el relleno según sea necesario */
+    text-decoration: none;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    width: 120px; /* Establecer un ancho fijo para todos los botones */
+    text-align: center;
+  }
+  
+  .nav-button:hover {
+    background-color: #e58908; /* Cambiar el color de fondo al pasar el mouse */
+  }

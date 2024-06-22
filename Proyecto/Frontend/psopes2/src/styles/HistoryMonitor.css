@@ -1,0 +1,46 @@
+.container_hm {
+    display: inline-block; /* Usar flexbox para colocar los elementos en la misma fila */
+    text-align: center;
+    width: 80%;
+    margin-right: 10%;
+    margin-left: 10%;
+  }
+
+.titulo_hm {
+  font-family: "Arial", sans-serif; /* Cambiar la familia de fuente */
+  font-size: 50px; /* Tamaño de la fuente */
+  font-weight: bold; /* Peso de la fuente */
+  color: #007bff; /* Color del texto */
+  text-align: center; /* Alinear el texto al centro */
+  text-transform: uppercase; /* Convertir el texto a mayúsculas */
+  letter-spacing: 2px; /* Espaciado entre letras */
+  margin-bottom: 20px; /* Margen inferior para separación */
+}
+
+.titulo_hm:hover {
+  color: #e58908; /* Cambiar el color del texto al pasar el mouse sobre el h1 */
+  cursor: pointer; /* Cambiar el cursor al pasar el mouse sobre el h1 */
+}
+
+.titulo-dos_hm {
+  font-family: "Arial", sans-serif; /* Cambiar la familia de fuente */
+  font-size: 25px; /* Tamaño de la fuente */
+  font-weight: bold; /* Peso de la fuente */
+  color: #007bff; /* Color del texto */
+  text-align: center; /* Alinear el texto al centro */
+  text-transform: uppercase; /* Convertir el texto a mayúsculas */
+  letter-spacing: 2px; /* Espaciado entre letras */
+  margin-bottom: 20px; /* Margen inferior para separación */
+}
+
+.titulo-dos_hm:hover {
+  color: #e58908; /* Cambiar el color del texto al pasar el mouse sobre el h1 */
+  cursor: pointer; /* Cambiar el cursor al pasar el mouse sobre el h1 */
+}
+
+.container-img_hm {
+  width: 60%;
+  align-items: center;
+}
+
+ 
