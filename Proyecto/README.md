@@ -9,8 +9,12 @@ ___
 ### Comandos utilizados en C:
 ```javascript
 // Comandos para C
+
+// Libreria necesaria
+sudo apt-get install libmysqlclient-dev
+
 // Para compilar los archivos de C
-gcc main.c -o main -lm
+gcc main.c -o main -lmysqlclient
 
 // Para Ejecutar el programa 
 sudo ./main
