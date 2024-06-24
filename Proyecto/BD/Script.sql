@@ -15,10 +15,20 @@ CREATE TABLE IF NOT EXISTS `Proceso`(
   PRIMARY KEY (id)
 )ENGINE = InnoDB;
 
+DROP PROCEDURE GetTopMemoryProcesses;
+
 DELIMITER //
 
 CREATE PROCEDURE GetTopMemoryProcesses()
 BEGIN
+    DECLARE totalMemoria DECIMAL(20, 5);
+    
+    -- Calcular el total de memoria para calcular los porcentajes después
+    SET totalMemoria = (
+    SELECT SUM(GREATEST((CASE WHEN LLamada LIKE 'MMAP' THEN Memoria ELSE -Memoria END),0))
+    FROM Proceso
+	);
+
     -- Crear una tabla temporal para almacenar los resultados
     CREATE TEMPORARY TABLE IF NOT EXISTS TempResults (
         PID VARCHAR(50),
@@ -27,35 +37,51 @@ BEGIN
         Porcentaje DECIMAL(20, 5)
     );
 
-    -- Insertar los top 9 procesos en la tabla temporal
+    -- Insertar los top 9 procesos agrupados por PID, Nombre en la tabla temporal
     INSERT INTO TempResults (PID, Nombre, Memoria, Porcentaje)
     SELECT PID, Nombre,
-           CAST(Memoria / 1024 / 1024 AS DECIMAL(20, 5)) AS Memoria,
-           Porcentaje
-    FROM Proceso
-    ORDER BY Memoria DESC
-    LIMIT 9;
+           GREATEST(CAST(SUM(CASE WHEN LLamada LIKE 'MMAP' THEN Memoria ELSE -Memoria END) / 1024 / 1024 AS DECIMAL(20, 5)), 0) AS Memoria,
+           GREATEST(SUM(CASE WHEN LLamada LIKE 'MMAP' THEN Memoria ELSE -Memoria END) / totalMemoria * 100, 0) AS Porcentaje
+    FROM Proceso 
+    GROUP BY PID, Nombre
+    ORDER BY SUM(CASE WHEN LLamada LIKE 'MMAP' THEN Memoria ELSE -Memoria END) DESC    
+    LIMIT 10;
 
-    -- Insertar la suma de memoria y porcentaje de los procesos restantes
+    -- Emulación de ROW_NUMBER() usando variables de usuario
+    SET @row_num := 0;
+    CREATE TEMPORARY TABLE ranked (
+        PID VARCHAR(50),
+        Nombre VARCHAR(100),
+        Memoria DECIMAL(20, 5),
+        row_num INT
+    );
+
+    INSERT INTO ranked (PID, Nombre, Memoria, row_num)
+    SELECT PID, Nombre,
+           GREATEST(SUM(CASE WHEN LLamada LIKE 'MMAP' THEN Memoria ELSE -Memoria END), 0) AS Memoria,
+           @row_num := @row_num + 1 AS row_num
+    FROM Proceso
+    GROUP BY PID, Nombre
+    ORDER BY Memoria DESC;
+
+    -- Insertar la suma de memoria y porcentaje de los procesos restantes bajo "Otros"
     INSERT INTO TempResults (PID, Nombre, Memoria, Porcentaje)
-    SELECT 'Todos' AS PID, 'Todos' AS Nombre, 
-           CAST(SUM(Memoria) / 1024 / 1024 AS DECIMAL(20, 5)) AS Memoria,
-           SUM(Porcentaje) AS Porcentaje
-    FROM (
-        SELECT PID, Nombre, Memoria, Porcentaje,
-               ROW_NUMBER() OVER (ORDER BY Memoria DESC) AS row_num
-        FROM Proceso
-    ) AS ranked
-    WHERE row_num > 9;
+    SELECT 'Todos' AS PID, 'Otros' AS Nombre, 
+           GREATEST(CAST(SUM(Memoria) / 1024 / 1024 AS DECIMAL(20, 5)), 0) AS Memoria,
+           GREATEST(SUM(Memoria) / totalMemoria * 100, 0) AS Porcentaje
+    FROM ranked
+    WHERE row_num > 12;
 
     -- Seleccionar todos los resultados de la tabla temporal
     SELECT * FROM TempResults;
 
-    -- Eliminar la tabla temporal
+    -- Eliminar las tablas temporales
     DROP TEMPORARY TABLE TempResults;
+    DROP TEMPORARY TABLE ranked;
 END //
 
 DELIMITER ;
+
 
 DELIMITER //
 
@@ -79,3 +105,4 @@ DELIMITER ;
 
 CALL ConvertirMemoriaToMB();
 CALL GetTopMemoryProcesses();
+   

@@ -21,7 +21,7 @@ const RealTimeMonitor = () => {
           setMsgError("");
 
           // Filtrar y formatear los datos de procesos
-          const procesosData = data[0].slice(0, 10); // Tomar solo los primeros 10 procesos
+          const procesosData = data[0].slice(0, 11); // Tomar solo los primeros 10 procesos
           setProcesos(procesosData);
 
           console.log(data);
@@ -49,7 +49,7 @@ const RealTimeMonitor = () => {
             {
               label: "Porcentaje de Memoria",
               data: procesos.map((proceso) => proceso.Memoria),
-              backgroundColor: ["#36a2eb", "#ff6384", "#ffcd56", "#4bc0c0", "#9966ff", "#ff7f50", "#66cdaa", "#f4a460", "#a9a9a9", "#d8bfd8"],
+              backgroundColor: ["#36a2eb", "#ff6384", "#ffcd56", "#4bc0c0", "#9966ff", "#ff7f50", "#66cdaa", "#f4a460", "#a9a9a9", "#d8bfd8", "#182fd8"],
             },
           ],
         },
