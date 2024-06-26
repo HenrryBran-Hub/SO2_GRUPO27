@@ -48,7 +48,11 @@ npm start
 
 ![DB-Tabla](./Img/DB-Tabla.png)
 
-### Procedure GetTopMemoryProcesses(), este proceso calcula el total de memoria para calcular los porcentajes, crear una tabla temporal para almacenar los resultados, inserta los top 9 procesos agrupados por PID, Nombre en la tabla temporal e inserta la suma de memoria y porcentaje de los procesos restantes bajo "Otros".
+### Procedure GetTopMemoryProcesses()
+- Este proceso calcula el total de memoria para calcular los porcentajes
+- Crea una tabla temporal para almacenar los resultados 
+- Inserta los top 9 procesos agrupados por PID
+- Nombra en la tabla temporal e inserta la suma de memoria y porcentaje de los procesos restantes bajo "Otros".
 
 ![Procedure_1](./Img/Procedure_1.png)
 
@@ -128,7 +132,12 @@ npm start
 
 ![C_6](./Img/C_6.png)
 
-### funcion main(), contiene el Manejo de la señal SIGINT (Ctrl+C), crea o trunca el archivo syscalls.log, Inicializa la conexión MySQL, tiene los datos de conexión, conecta a la base de datos e Inicia el comando para capturar los registros
+### funcion main()
+- Contiene el Manejo de la señal SIGINT (Ctrl+C)
+- Crea o trunca el archivo syscalls.log
+- Inicializa la conexión MySQL
+- Tiene los datos de conexión
+- Conecta a la base de datos e Inicia el comando para capturar los registros
 
 ![C_7](./Img/C_7.png)
 
