@@ -145,6 +145,17 @@ npm start
 
 ![C_9](./Img/C_9.png)
 
+# Funcionamiento del programa
+
+### Inicio del programa
+![Programa-inicio](./Img/Programa-Inicio.png)
+
+### Grafica y top de procesos
+![Programa-grafica](./Img/Programa-grafica.png)
+
+### Tabla de procesos
+![Programa-tabla](./Img/Programa-tabla.png)
+
 ___
 ### Integrantes
 | Nombre | Carnet | Usuario Git |

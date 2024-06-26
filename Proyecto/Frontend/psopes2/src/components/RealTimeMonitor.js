@@ -6,6 +6,7 @@ import Chart from "chart.js/auto";
 
 const RealTimeMonitor = () => {
   const [procesos, setProcesos] = useState([]);
+  const [procesos2, setProcesos2] = useState([]);
   const [errorDeConexion, setErrorDeConexion] = useState(false);
   const [msgerror, setMsgError] = useState("");
 
@@ -21,8 +22,10 @@ const RealTimeMonitor = () => {
           setMsgError("");
 
           // Filtrar y formatear los datos de procesos
-          const procesosData = data[0].slice(0, 11); // Tomar solo los primeros 10 procesos
+          const procesosData = data[0].slice(0, 10); // Tomar solo los primeros 10 procesos
           setProcesos(procesosData);
+          const procesosData2 = data[0].slice(0, 11); // Tomar solo los primeros 10 procesos
+          setProcesos2(procesosData2);
 
           console.log(data);
         })
@@ -49,7 +52,7 @@ const RealTimeMonitor = () => {
             {
               label: "Porcentaje de Memoria",
               data: procesos.map((proceso) => proceso.Memoria),
-              backgroundColor: ["#36a2eb", "#ff6384", "#ffcd56", "#4bc0c0", "#9966ff", "#ff7f50", "#66cdaa", "#f4a460", "#a9a9a9", "#d8bfd8", "#182fd8"],
+              backgroundColor: ["#36a2eb", "#ff6384", "#ffcd56", "#4bc0c0", "#9966ff", "#ff7f50", "#66cdaa", "#f4a460", "#a9a9a9", "#d8bfd8"],
             },
           ],
         },
@@ -93,7 +96,7 @@ const RealTimeMonitor = () => {
           </tr>
         </thead>
         <tbody>
-          {procesos.map((proceso, index) => (
+          {procesos2.map((proceso, index) => (
             <tr key={index}>
               <td>{proceso.PID}</td>
               <td>{proceso.Nombre}</td>
